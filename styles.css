@@ -1,0 +1,9 @@
+body{
+  align-items: center
+}
+
+#canvas{
+  width: "150px";
+  height: "150px";
+  background-color: red;
+}
