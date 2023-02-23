@@ -1,9 +1,14 @@
 body{
-  align-items: center
+  text-align: center;
 }
 
-#canvas{
-  width: "150px";
-  height: "150px";
-  background-color: red;
+#mainGrid{
+  background-color: black;
+  image-rendering: pixelated;
+}
+
+#nextPiece{
+  width: 120px;
+  height: 120px;
+  background-color: black;
 }
