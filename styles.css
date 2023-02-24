@@ -2,9 +2,35 @@ body{
   text-align: center;
 }
 
+#gridContainer{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+#holdContainer{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin-right: 10px;
+}
+
+#holdPiece{
+  width: 120px;
+  height: 120px;
+  background-color: black;
+}
+
 #mainGrid{
   background-color: black;
   image-rendering: pixelated;
+}
+
+#nextContainer{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin-left: 10px;
 }
 
 #nextPiece{
