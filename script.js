@@ -55,14 +55,17 @@ async function mainLoop(ctx) {
   while (!isGameOver) {
     if (fallingPiece === undefined || fallingPiece.length === 0) {
       if(grid[0][0] != "y"){
-        fallingPiece = [[0, 0]];
+        fallingPiece = [];
         grid[0][0] = "y";
+        grid[0][1] = "y";
+        fallingPiece.push({row: 0, col: 0});
+        fallingPiece.push({row: 0, col: 1});
       }
     }
 
     let canFall = (fallingPiece) => {
-      for ([row, col] of fallingPiece) {
-        if (row >= 19 || grid[row + 1][col] != "" || grid[row][col] === "") {
+      for ({row, col} of fallingPiece) {
+        if (row == undefined || col == undefined || row >= 19 || grid[row + 1][col] != "" || grid[row][col] === "") {
           return false;
         }
       }
@@ -73,11 +76,11 @@ async function mainLoop(ctx) {
     let tempFallingPiece = [];
     if (canFall(fallingPiece)) {
       
-    for ([row, col] of fallingPiece) {
+    for ({row, col} of fallingPiece) {
       if (row < 19) {
         grid[row + 1][col] = grid[row][col];
         grid[row][col] = "";
-        tempFallingPiece.push([row + 1, col])
+        tempFallingPiece.push({row: row + 1, col: col})
       } 
     }
     
@@ -99,7 +102,7 @@ document.addEventListener('keydown', async function (event) {
     console.log("ArrowDown");
   } else if (event.key === "ArrowLeft") {
     let canMoveLeft = (fallingPiece) => {
-      for ([row, col] of fallingPiece) {
+      for ({row, col} of fallingPiece) {
         if (row <= 0 || grid[row][col - 1] != "")
           return false;
       }
@@ -109,10 +112,10 @@ document.addEventListener('keydown', async function (event) {
 
     let tempFallingPiece = [];
     if (canMoveLeft(fallingPiece)) {
-      for([row, col] of fallingPiece){
+      for({row, col} of fallingPiece){
         grid[row][col-1] = grid[row][col];
         grid[row][col] = "";
-        tempFallingPiece.push([row,col - 1]);
+        tempFallingPiece.push({row: row, col: col - 1});
       }
       fallingPiece = tempFallingPiece;
     }
@@ -122,7 +125,10 @@ document.addEventListener('keydown', async function (event) {
         if(fallingPiece.length === 0)
           return false;
 
-        for ([row, col] of fallingPiece) {
+        for ({row, col} of fallingPiece) {
+          if(fallingPiece.some(e => e.row === row && e.col === col + 1)){
+            continue;
+          }
           if (col >= 9 || grid[row][col + 1] != "")
             return false;
         }
@@ -130,13 +136,16 @@ document.addEventListener('keydown', async function (event) {
         return true;
       }
     
-    tempFallingPiece = [];
+    let tempFallingPiece = [];
     if (canMoveRight(fallingPiece)) {
-      for([row, col] of fallingPiece){
-        console.log(row, col);
+      for({row, col} of fallingPiece){
         grid[row][col+1] = grid[row][col];
+        tempFallingPiece.push({row: row, col: col + 1});
+      }
+      fallingPiece = fallingPiece.filter(e1 => !tempFallingPiece.some(e2 => e1.row === e2.row && e1.col === e2.col));
+      console.log(fallingPiece)
+      for({row, col} of fallingPiece){
         grid[row][col] = "";
-        tempFallingPiece.push([row, col+1]);
       }
       fallingPiece = tempFallingPiece;
     }
