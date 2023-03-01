@@ -8,13 +8,6 @@ body{
   justify-content: center;
 }
 
-#holdContainer{
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  margin-right: 10px;
-}
-
 #holdPiece{
   width: 120px;
   height: 120px;
