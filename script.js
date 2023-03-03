@@ -5,6 +5,7 @@ let ctx;
 let fallingPiece = [];
 let isGameOver = false;
 let move = "";
+let dropSpeed = 400;
 
 let row;
 let col;
@@ -12,44 +13,9 @@ let col;
 window.addEventListener('load', function () {
   canvas = document.getElementById("mainGrid");
   ctx = canvas.getContext("2d");
-  console.log(ctx);
   updateDisplay(ctx);
   mainLoop(ctx);
 })
-
-function changeGrid(row, col, color, ctx) {
-  ctx.fillStyle = color;
-
-  for (let i = 0; i < 29; ++i) {
-    ctx.fillRect(i + 30 * col, 30 * row, 1, 1);           // draw top border
-    ctx.fillRect(29 + 30 * col, i + 30 * row, 1, 1);      // draw right border
-    ctx.fillRect(30 * col, 29 - i + 30 * row, 1, 1);        // draw bottom border
-    ctx.fillRect(29 - i + 30 * col, 29 + 30 * row, 1, 1);   // draw left border
-  }
-
-  ctx.fillStyle = color;
-  ctx.fillRect(30 * col + 1, 30 * row + 1, 28, 28);
-}
-
-function delay(ms) {
-  return new Promise((resolve) =>
-    setTimeout(resolve, ms)
-  );
-}
-
-async function updateDisplay(ctx) {
-  return delay(200).then(e => {
-    for (let i = 0; i < 20; ++i) {
-      for (let j = 0; j < 10; ++j) {
-        if (grid[i][j] !== "") {
-          changeGrid(i, j, "grey", ctx);
-        } else {
-          changeGrid(i, j, "black", ctx);
-        }
-      }
-    }
-  })
-};
 
 async function mainLoop(ctx) {
   while (!isGameOver) {
@@ -89,24 +55,6 @@ async function mainLoop(ctx) {
       }
     }
 
-    let canFall = (fallingPiece) => {
-      for ({ row, col } of fallingPiece) {
-        if (row == undefined || col == undefined || row >= 19) {
-          return false;
-        }
-
-        for ({ row, col } of fallingPiece) {
-          if (fallingPiece.some(e => e.row === row + 1 && e.col === col)) {
-            continue;
-          }
-          if (row >= 19 || grid[row + 1][col] != "")
-            return false;
-        }
-      }
-
-      return true;
-    }
-
     let tempFallingPiece = [];
     if (canFall(fallingPiece)) {
 
@@ -136,9 +84,55 @@ async function mainLoop(ctx) {
 
 }
 
+function delay(ms) {
+  return new Promise((resolve) =>
+    setTimeout(resolve, ms)
+  );
+}
+
+function changeGrid(row, col, color, ctx) {
+  ctx.fillStyle = color;
+  ctx.fillRect(30 * col + 1, 30 * row + 1, 28, 28);
+}
+
+async function updateDisplay(ctx) {
+  return delay(dropSpeed).then(e => {
+    for (let i = 0; i < 20; ++i) {
+      for (let j = 0; j < 10; ++j) {
+        if (grid[i][j] !== "") {
+          changeGrid(i, j, "grey", ctx);
+        } else {
+          changeGrid(i, j, "black", ctx);
+        }
+      }
+    }
+  })
+};
+
+function canFall(fallingPiece) {
+  if(fallingPiece.length === 0)
+    return false;
+    
+  for ({ row, col } of fallingPiece) {
+    if (row == undefined || col == undefined || row >= 19) {
+      return false;
+    }
+
+    for ({ row, col } of fallingPiece) {
+      if (fallingPiece.some(e => e.row === row + 1 && e.col === col)) {
+        continue;
+      }
+      if (row >= 19 || grid[row + 1][col] != "")
+        return false;
+    }
+  }
+
+  return true;
+}
+
 document.addEventListener('keydown', async function (event) {
   if (event.key === "ArrowDown") {
-    console.log("ArrowDown");
+    dropSpeed = 150;
   } else if (event.key === "ArrowLeft") {
     let canMoveLeft = (fallingPiece) => {
       if (fallingPiece.length === 0)
@@ -280,8 +274,39 @@ document.addEventListener('keydown', async function (event) {
         }
       }
     }
-
-
-    console.log("ArrowUp");
   }
 });
+
+document.addEventListener('keyup', async function (event){
+  if(event.key === "ArrowDown"){
+    dropSpeed = 400;
+  }else if(event.key === " "){
+    while(canFall(fallingPiece)) {
+      let tempFallingPiece = [];
+      for ({ row, col } of fallingPiece) {
+        if (row < 19) {
+          grid[row + 1][col] = grid[row][col];
+          tempFallingPiece.push({ row: row + 1, col: col })
+        }
+      }
+
+      fallingPiece = fallingPiece.filter(e1 => !tempFallingPiece.some(e2 => e1.row === e2.row && e1.col === e2.col));
+
+      for ({ row, col } of fallingPiece) {
+        grid[row][col] = "";
+      }
+      fallingPiece = tempFallingPiece;
+    }
+    fallingPiece = [];
+  }
+})
+
+function changeNextPiece(blockType){
+  let block = ["I", "J", "L", "O", "S", "T", "Z"];
+  let nextPieceCanvas = document.getElementById("mainGrid");
+  let nextPieceCtx = canvas.getContext("2d");
+
+  if(blockType = "I"){
+    
+  }
+}
