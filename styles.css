@@ -8,12 +8,6 @@ body{
   justify-content: center;
 }
 
-#holdPiece{
-  width: 120px;
-  height: 120px;
-  background-color: black;
-}
-
 #mainGrid{
   background-color: black;
   image-rendering: pixelated;
@@ -27,7 +21,5 @@ body{
 }
 
 #nextPiece{
-  width: 120px;
-  height: 120px;
   background-color: black;
 }

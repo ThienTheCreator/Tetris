@@ -2,6 +2,8 @@
 let grid = new Array(20).fill("").map(() => new Array(10).fill(""));
 let canvas;
 let ctx;
+let nextPieceCanvas;
+let nextPieceCtx;
 let fallingPiece = [];
 let isGameOver = false;
 let move = "";
@@ -13,6 +15,8 @@ let col;
 window.addEventListener('load', function () {
   canvas = document.getElementById("mainGrid");
   ctx = canvas.getContext("2d");
+  nextPieceCanvas = document.getElementById("nextPiece");
+  nextPieceCtx = nextPieceCanvas.getContext("2d");
   updateDisplay(ctx);
   mainLoop(ctx);
 })
@@ -301,12 +305,40 @@ document.addEventListener('keyup', async function (event){
   }
 })
 
-function changeNextPiece(blockType){
+async function changeNextPiece(blockType){
   let block = ["I", "J", "L", "O", "S", "T", "Z"];
-  let nextPieceCanvas = document.getElementById("mainGrid");
-  let nextPieceCtx = canvas.getContext("2d");
 
-  if(blockType = "I"){
-    
+  await delay(100);
+  if(blockType == "I"){
+    horizontalSquares(16, 61, 4);
+  }else if(blockType == "J"){
+    horizontalSquares(31, 46, 1);
+    horizontalSquares(31, 76, 3);
+  }else if(blockType == "L"){
+    horizontalSquares(91, 46, 1);
+    horizontalSquares(31, 76, 3);
+  }else if(blockType == "O"){
+    horizontalSquares(46, 46, 2);
+    horizontalSquares(46, 76, 2);
+  }else if(blockType == "S"){
+    horizontalSquares(61, 46, 2);
+    horizontalSquares(31, 76, 2);
+  }else if(blockType == "T"){
+    horizontalSquares(61, 46, 1);
+    horizontalSquares(31, 76, 3);
+  }else if(blockType == "Z"){
+    horizontalSquares(31, 46, 2);
+    horizontalSquares(61, 76, 2);
   }
 }
+
+function horizontalSquares(x, y, num){
+  nextPieceCtx.fillStyle = "grey";
+  for(let i = 0; i < num; ++i){
+    nextPieceCtx.fillRect( 30 * i + x, y + 1, 28, 28);
+  }
+}
+
+delay(100).then(e => {
+  changeNextPiece();
+});
