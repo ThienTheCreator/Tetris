@@ -1,10 +1,10 @@
-
-let grid = new Array(20).fill("").map(() => new Array(10).fill(""));
+let grid = new Array(21).fill("").map(() => new Array(10).fill(""));
 let canvas;
 let ctx;
 let nextPieceCanvas;
 let nextPieceCtx;
 let fallingPiece = [];
+let nextPiece;
 let isGameOver = false;
 let move = "";
 let dropSpeed = 400;
@@ -12,11 +12,16 @@ let dropSpeed = 400;
 let row;
 let col;
 
+let blockType = ["I", "J", "L", "O", "S", "T", "Z"];
+
 window.addEventListener('load', function () {
   canvas = document.getElementById("mainGrid");
   ctx = canvas.getContext("2d");
   nextPieceCanvas = document.getElementById("nextPiece");
   nextPieceCtx = nextPieceCanvas.getContext("2d");
+
+  nextPiece = "I";
+  changeNextPieceDisplay(nextPiece);
   updateDisplay(ctx);
   mainLoop(ctx);
 })
@@ -33,7 +38,7 @@ async function mainLoop(ctx) {
         return true;
       };
 
-      for (let i = 0; i < 20; ++i) {
+      for (let i = 0; i <= 20; ++i) {
         if (isRowFull(grid[i])) {
           for (let j = 0; j < 10; ++j) {
             grid[i][j] = "";
@@ -46,16 +51,11 @@ async function mainLoop(ctx) {
         }
       }
 
-      if (grid[0][0] != "y") {
-        fallingPiece = [];
-        grid[0][0] = "y";
-        grid[0][1] = "y";
-        grid[0][2] = "y";
-        grid[0][3] = "y";
-        fallingPiece.push({ row: 0, col: 0 });
-        fallingPiece.push({ row: 0, col: 1 });
-        fallingPiece.push({ row: 0, col: 2 });
-        fallingPiece.push({ row: 0, col: 3 });
+      if (grid[0][3] != "y") {
+        changeFallingPiece(nextPiece);
+        
+        nextPiece = blockType[Math.floor(Math.random()*blockType.length)];
+        changeNextPieceDisplay(nextPiece);
       }
     }
 
@@ -63,13 +63,17 @@ async function mainLoop(ctx) {
     if (canFall(fallingPiece)) {
 
       for ({ row, col } of fallingPiece) {
-        if (row < 19) {
+        if (row < 20) {
           grid[row + 1][col] = grid[row][col];
           tempFallingPiece.push({ row: row + 1, col: col })
         }
       }
 
-      fallingPiece = fallingPiece.filter(e1 => !tempFallingPiece.some(e2 => e1.row === e2.row && e1.col === e2.col));
+      fallingPiece = fallingPiece.filter(e1 => 
+        !tempFallingPiece.some(e2 => 
+          e1.row === e2.row && e1.col === e2.col
+        )
+      );
 
       for ({ row, col } of fallingPiece) {
         grid[row][col] = "";
@@ -77,7 +81,15 @@ async function mainLoop(ctx) {
     }
     fallingPiece = tempFallingPiece;
 
-    if (grid[0][0] != "") {
+    let canPlace = (grid) => {
+      for(let i = 0; i < 10; ++i){
+        if(grid[0][i] != "")
+          return false;
+      }
+      return true;
+    }
+
+    if (!canPlace(grid)) {
       isGameOver = true;
     }
 
@@ -101,12 +113,12 @@ function changeGrid(row, col, color, ctx) {
 
 async function updateDisplay(ctx) {
   return delay(dropSpeed).then(e => {
-    for (let i = 0; i < 20; ++i) {
-      for (let j = 0; j < 10; ++j) {
+    for (let i = 1; i <= 20; ++i) {
+      for (let j = 0; j <= 9; ++j) {
         if (grid[i][j] !== "") {
-          changeGrid(i, j, "grey", ctx);
+          changeGrid(i - 1, j, "grey", ctx);
         } else {
-          changeGrid(i, j, "black", ctx);
+          changeGrid(i - 1, j, "black", ctx);
         }
       }
     }
@@ -118,7 +130,7 @@ function canFall(fallingPiece) {
     return false;
     
   for ({ row, col } of fallingPiece) {
-    if (row == undefined || col == undefined || row >= 19) {
+    if (row == undefined || col == undefined || row >= 20) {
       return false;
     }
 
@@ -126,7 +138,7 @@ function canFall(fallingPiece) {
       if (fallingPiece.some(e => e.row === row + 1 && e.col === col)) {
         continue;
       }
-      if (row >= 19 || grid[row + 1][col] != "")
+      if (row >= 20 || grid[row + 1][col] != "")
         return false;
     }
   }
@@ -159,7 +171,12 @@ document.addEventListener('keydown', async function (event) {
         grid[row][col - 1] = grid[row][col];
         tempFallingPiece.push({ row: row, col: col - 1 });
       }
-      fallingPiece = fallingPiece.filter(e1 => !tempFallingPiece.some(e2 => e1.row === e2.row && e1.col === e2.col));
+      
+      fallingPiece = fallingPiece.filter(e1 => 
+        !tempFallingPiece.some(e2 => 
+          e1.row === e2.row && e1.col === e2.col
+        )
+      );
 
       for ({ row, col } of fallingPiece) {
         grid[row][col] = "";
@@ -189,7 +206,11 @@ document.addEventListener('keydown', async function (event) {
         grid[row][col + 1] = grid[row][col];
         tempFallingPiece.push({ row: row, col: col + 1 });
       }
-      fallingPiece = fallingPiece.filter(e1 => !tempFallingPiece.some(e2 => e1.row === e2.row && e1.col === e2.col));
+      fallingPiece = fallingPiece.filter(e1 => 
+        !tempFallingPiece.some(e2 => 
+          e1.row === e2.row && e1.col === e2.col
+        )
+      );
 
       for ({ row, col } of fallingPiece) {
         grid[row][col] = "";
@@ -197,15 +218,7 @@ document.addEventListener('keydown', async function (event) {
       fallingPiece = tempFallingPiece;
     }
   } else if (event.key === "ArrowUp") {
-
-    let m = [
-      [1, 0, 0, 0],
-      [0, 0, -1, 0],
-      [0, 1, 0, 0],
-      [0, 0, 0, 1]
-    ];
-
-    let minRow = 20;
+    let minRow = 21;
     let minCol = 10;
     for (let i = 0; i < fallingPiece.length; ++i) {
       minRow = Math.min(minRow, fallingPiece[i].row);
@@ -216,7 +229,7 @@ document.addEventListener('keydown', async function (event) {
 
     for(let i = 0; i < 4; ++i){
       for(let j = 0; j < 4; ++j){
-        if(minRow+i >= 20 || minCol+j >= 10){
+        if(minRow+i > 20 || minCol+j > 9){
           continue;
         }
         
@@ -250,7 +263,7 @@ document.addEventListener('keydown', async function (event) {
       for (let i = 0; i < 4; ++i) {
         for (let j = 0; j < 4; ++j) {
           if(rotateGrid[i][j] != ""){
-            if(minRow + i >= 20 || minCol+j >= 10 || grid[minRow+i][minCol+j] != ""){
+            if(minRow + i > 20 || minCol+j > 9 || grid[minRow+i][minCol+j] != ""){
               for({row, col} of fallingPiece){
                 grid[row][col] = "y";
               }
@@ -288,13 +301,17 @@ document.addEventListener('keyup', async function (event){
     while(canFall(fallingPiece)) {
       let tempFallingPiece = [];
       for ({ row, col } of fallingPiece) {
-        if (row < 19) {
+        if (row < 20) {
           grid[row + 1][col] = grid[row][col];
           tempFallingPiece.push({ row: row + 1, col: col })
         }
       }
 
-      fallingPiece = fallingPiece.filter(e1 => !tempFallingPiece.some(e2 => e1.row === e2.row && e1.col === e2.col));
+      fallingPiece = fallingPiece.filter(e1 => 
+        !tempFallingPiece.some(e2 => 
+          e1.row === e2.row && e1.col === e2.col
+        )
+      );
 
       for ({ row, col } of fallingPiece) {
         grid[row][col] = "";
@@ -305,10 +322,16 @@ document.addEventListener('keyup', async function (event){
   }
 })
 
-async function changeNextPiece(blockType){
-  let block = ["I", "J", "L", "O", "S", "T", "Z"];
+function horizontalSquares(x, y, num){
+  nextPieceCtx.fillStyle = "grey";
+  for(let i = 0; i < num; ++i){
+    nextPieceCtx.fillRect( 30 * i + x, y + 1, 28, 28);
+  }
+}
 
-  await delay(100);
+function changeNextPieceDisplay(blockType){
+  nextPieceCtx.fillStyle = "black";
+  nextPieceCtx.fillRect( 0, 0, 150, 150);
   if(blockType == "I"){
     horizontalSquares(16, 61, 4);
   }else if(blockType == "J"){
@@ -332,13 +355,54 @@ async function changeNextPiece(blockType){
   }
 }
 
-function horizontalSquares(x, y, num){
-  nextPieceCtx.fillStyle = "grey";
-  for(let i = 0; i < num; ++i){
-    nextPieceCtx.fillRect( 30 * i + x, y + 1, 28, 28);
+function changeFallingPiece(blockType){
+  fallingPiece = [];
+  if(blockType == "I"){
+    for(let i = 3; i <= 6; ++i){
+      grid[0][i] = "y";
+      fallingPiece.push({ row: 0, col: i });
+    }
+  }else if(blockType == "J"){
+    grid[0][3] = "y";
+    fallingPiece.push({ row: 0, col: 3 });
+    for(let i = 3; i <= 5; ++i){
+      grid[1][i] = "y";
+      fallingPiece.push({ row: 1, col: i });
+    }
+  }else if(blockType == "L"){
+    grid[0][5] = "y";
+    fallingPiece.push({ row: 0, col: 5 });
+    for(let i = 3; i <= 5; ++i){
+      grid[1][i] = "y";
+      fallingPiece.push({ row: 1, col: i });
+    }
+  }else if(blockType == "O"){
+    for(let i = 4; i <= 5; ++i){
+      grid[0][i] = "y";
+      grid[1][i] = "y";
+      fallingPiece.push({ row: 0, col: i });
+      fallingPiece.push({ row: 1, col: i });
+    }
+  }else if(blockType == "S"){
+    for(let i = 4; i <= 5; ++i){
+      grid[0][i] = "y";
+      grid[1][i-1] = "y";
+      fallingPiece.push({ row: 0, col: i });
+      fallingPiece.push({ row: 1, col: i-1 });
+    }
+  }else if(blockType == "T"){
+    grid[0][4] = "y";
+    fallingPiece.push({ row: 0, col: 4 });
+    for(let i = 3; i <= 5; ++i){
+      grid[1][i] = "y";
+      fallingPiece.push({ row: 1, col: i });
+    }
+  }else if(blockType == "Z"){
+    for(let i = 4; i <= 5; ++i){
+      grid[0][i-1] = "y";
+      grid[1][i] = "y";
+      fallingPiece.push({ row: 0, col: i-1 });
+      fallingPiece.push({ row: 1, col: i });
+    }
   }
 }
-
-delay(100).then(e => {
-  changeNextPiece();
-});
