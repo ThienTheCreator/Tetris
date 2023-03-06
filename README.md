@@ -15,3 +15,5 @@ stored the temporary falling piece positions in an 2d array but switch to object
 to deal with.
 
 Did rotating pieces was difficult and code is messy. Need to figure a way to clean up the code after.
+
+Having trouble adding colors to blocks because it disappears when rotate.

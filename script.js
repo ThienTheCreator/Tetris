@@ -13,6 +13,8 @@ let row;
 let col;
 
 let blockType = ["I", "J", "L", "O", "S", "T", "Z"];
+let blockColor = {"I": "#00f0f0", "J": "#0000f0", "L": "#f0a000", 
+  "O":"#f0f000", "S":"#00f000", "T":"#a000f0", "Z":"#d80000"}
 
 window.addEventListener('load', function () {
   canvas = document.getElementById("mainGrid");
@@ -21,7 +23,7 @@ window.addEventListener('load', function () {
   nextPieceCtx = nextPieceCanvas.getContext("2d");
 
   nextPiece = "I";
-  changeNextPieceDisplay(nextPiece);
+  changeNextPieceDisplay(nextPiece, blockColor[nextPiece]);
   updateDisplay(ctx);
   mainLoop(ctx);
 })
@@ -51,11 +53,11 @@ async function mainLoop(ctx) {
         }
       }
 
-      if (grid[0][3] != "y") {
+      if (grid[0][3] == "") {
         changeFallingPiece(nextPiece);
         
         nextPiece = blockType[Math.floor(Math.random()*blockType.length)];
-        changeNextPieceDisplay(nextPiece);
+        changeNextPieceDisplay(nextPiece, blockColor[nextPiece]);
       }
     }
 
@@ -116,7 +118,7 @@ async function updateDisplay(ctx) {
     for (let i = 1; i <= 20; ++i) {
       for (let j = 0; j <= 9; ++j) {
         if (grid[i][j] !== "") {
-          changeGrid(i - 1, j, "grey", ctx);
+          changeGrid(i - 1, j, grid[i][j], ctx);
         } else {
           changeGrid(i - 1, j, "black", ctx);
         }
@@ -254,9 +256,11 @@ document.addEventListener('keydown', async function (event) {
     }
 
     rotate(rotateGrid)
-
+    
+    let temp = "";
     let hasSpace = (grid, rotateGrid) => {
       for({row, col} of fallingPiece){
+        temp = grid[row][col];
         grid[row][col] = "";
       }
 
@@ -265,7 +269,7 @@ document.addEventListener('keydown', async function (event) {
           if(rotateGrid[i][j] != ""){
             if(minRow + i > 20 || minCol+j > 9 || grid[minRow+i][minCol+j] != ""){
               for({row, col} of fallingPiece){
-                grid[row][col] = "y";
+                grid[row][col] = temp;
               }
               return false;
             }
@@ -276,7 +280,6 @@ document.addEventListener('keydown', async function (event) {
     }
 
     if(hasSpace(grid, rotateGrid)){
-      let temp = grid[fallingPiece[0].row][fallingPiece[0].col];
       for({row, col} of fallingPiece){
         grid[row][col] = "";
       }
@@ -285,7 +288,7 @@ document.addEventListener('keydown', async function (event) {
       for(let i = 0; i < 4; ++i){
         for(let j = 0; j < 4; ++j){
           if(rotateGrid[i][j] != ""){
-            grid[minRow+i][minCol+j] = "y";
+            grid[minRow+i][minCol+j] = temp;
             fallingPiece.push({row: minRow + i, col: minCol + j});
           }
         }
@@ -322,36 +325,37 @@ document.addEventListener('keyup', async function (event){
   }
 })
 
-function horizontalSquares(x, y, num){
-  nextPieceCtx.fillStyle = "grey";
+function horizontalSquares(x, y, num, color){
+  nextPieceCtx.fillStyle = color;
   for(let i = 0; i < num; ++i){
     nextPieceCtx.fillRect( 30 * i + x, y + 1, 28, 28);
   }
 }
 
-function changeNextPieceDisplay(blockType){
+function changeNextPieceDisplay(blockType, color){
   nextPieceCtx.fillStyle = "black";
   nextPieceCtx.fillRect( 0, 0, 150, 150);
+  
   if(blockType == "I"){
-    horizontalSquares(16, 61, 4);
+    horizontalSquares(16, 61, 4, color);
   }else if(blockType == "J"){
-    horizontalSquares(31, 46, 1);
-    horizontalSquares(31, 76, 3);
+    horizontalSquares(31, 46, 1, color);
+    horizontalSquares(31, 76, 3, color);
   }else if(blockType == "L"){
-    horizontalSquares(91, 46, 1);
-    horizontalSquares(31, 76, 3);
+    horizontalSquares(91, 46, 1, color);
+    horizontalSquares(31, 76, 3, color);
   }else if(blockType == "O"){
-    horizontalSquares(46, 46, 2);
-    horizontalSquares(46, 76, 2);
+    horizontalSquares(46, 46, 2, color);
+    horizontalSquares(46, 76, 2, color);
   }else if(blockType == "S"){
-    horizontalSquares(61, 46, 2);
-    horizontalSquares(31, 76, 2);
+    horizontalSquares(61, 46, 2, color);
+    horizontalSquares(31, 76, 2, color);
   }else if(blockType == "T"){
-    horizontalSquares(61, 46, 1);
-    horizontalSquares(31, 76, 3);
+    horizontalSquares(61, 46, 1, color);
+    horizontalSquares(31, 76, 3, color);
   }else if(blockType == "Z"){
-    horizontalSquares(31, 46, 2);
-    horizontalSquares(61, 76, 2);
+    horizontalSquares(31, 46, 2, color);
+    horizontalSquares(61, 76, 2, color);
   }
 }
 
@@ -359,48 +363,48 @@ function changeFallingPiece(blockType){
   fallingPiece = [];
   if(blockType == "I"){
     for(let i = 3; i <= 6; ++i){
-      grid[0][i] = "y";
+      grid[0][i] = blockColor["I"];
       fallingPiece.push({ row: 0, col: i });
     }
   }else if(blockType == "J"){
-    grid[0][3] = "y";
+    grid[0][3] = blockColor["J"];
     fallingPiece.push({ row: 0, col: 3 });
     for(let i = 3; i <= 5; ++i){
-      grid[1][i] = "y";
+      grid[1][i] = blockColor["J"];
       fallingPiece.push({ row: 1, col: i });
     }
   }else if(blockType == "L"){
-    grid[0][5] = "y";
+    grid[0][5] = blockColor["L"];
     fallingPiece.push({ row: 0, col: 5 });
     for(let i = 3; i <= 5; ++i){
-      grid[1][i] = "y";
+      grid[1][i] = blockColor["L"];;
       fallingPiece.push({ row: 1, col: i });
     }
   }else if(blockType == "O"){
     for(let i = 4; i <= 5; ++i){
-      grid[0][i] = "y";
-      grid[1][i] = "y";
+      grid[0][i] = blockColor["O"];
+      grid[1][i] = blockColor["O"];
       fallingPiece.push({ row: 0, col: i });
       fallingPiece.push({ row: 1, col: i });
     }
   }else if(blockType == "S"){
     for(let i = 4; i <= 5; ++i){
-      grid[0][i] = "y";
-      grid[1][i-1] = "y";
+      grid[0][i] = blockColor["S"];
+      grid[1][i-1] = blockColor["S"];
       fallingPiece.push({ row: 0, col: i });
       fallingPiece.push({ row: 1, col: i-1 });
     }
   }else if(blockType == "T"){
-    grid[0][4] = "y";
+    grid[0][4] = blockColor["T"];
     fallingPiece.push({ row: 0, col: 4 });
     for(let i = 3; i <= 5; ++i){
-      grid[1][i] = "y";
+      grid[1][i] = blockColor["T"];
       fallingPiece.push({ row: 1, col: i });
     }
   }else if(blockType == "Z"){
     for(let i = 4; i <= 5; ++i){
-      grid[0][i-1] = "y";
-      grid[1][i] = "y";
+      grid[0][i-1] = blockColor["Z"];
+      grid[1][i] = blockColor["Z"];
       fallingPiece.push({ row: 0, col: i-1 });
       fallingPiece.push({ row: 1, col: i });
     }
