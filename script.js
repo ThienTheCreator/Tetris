@@ -24,7 +24,7 @@ window.addEventListener('load', function () {
 
   nextPiece = "I";
   changeNextPieceDisplay(nextPiece, blockColor[nextPiece]);
-  updateDisplay(ctx);
+  updateDisplay(ctx, dropSpeed);
   mainLoop(ctx);
 })
 
@@ -95,11 +95,8 @@ async function mainLoop(ctx) {
       isGameOver = true;
     }
 
-    await updateDisplay(ctx);
-
-
+    await updateDisplay(ctx, dropSpeed);
   }
-
 }
 
 function delay(ms) {
@@ -113,7 +110,7 @@ function changeGrid(row, col, color, ctx) {
   ctx.fillRect(30 * col + 1, 30 * row + 1, 28, 28);
 }
 
-async function updateDisplay(ctx) {
+async function updateDisplay(ctx, dropSpeed) {
   return delay(dropSpeed).then(e => {
     for (let i = 1; i <= 20; ++i) {
       for (let j = 0; j <= 9; ++j) {
@@ -295,6 +292,7 @@ document.addEventListener('keydown', async function (event) {
       }
     }
   }
+  updateDisplay(ctx, 100);
 });
 
 document.addEventListener('keyup', async function (event){
@@ -322,6 +320,7 @@ document.addEventListener('keyup', async function (event){
       fallingPiece = tempFallingPiece;
     }
     fallingPiece = [];
+    updateDisplay(ctx, 100);
   }
 })
 
