@@ -388,6 +388,8 @@ function changeNextPieceDisplay(blockType, color) {
   nextPieceCtx.fillStyle = "black";
   nextPieceCtx.fillRect(0, 0, 150, 150);
 
+  color = isMonochrome ? "grey" : color;
+
   if (blockType == "I") {
     horizontalSquares(16, 61, 4, color);
   } else if (blockType == "J") {
