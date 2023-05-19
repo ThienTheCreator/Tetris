@@ -10,6 +10,7 @@ let dropSpeed = 400;
 let upperLeftCorner = { row: 0, col: 0 };
 let gridSize = 0;
 let fallingPieceGrid = new Array(4).fill("").map(() => new Array(4).fill(""));
+let isMonochrome = false;
 
 let blockType = ["I", "J", "L", "O", "S", "T", "Z"];
 let blockColorHex = {
@@ -22,18 +23,48 @@ let blockColorHex = {
   Z: "#d80000",
 };
 
+function setGame() {
+  isGameOver = false;
+  document.getElementById("lines").innerHTML = 0;
+  nextPiece = "I";
+  gridSize = 4;
+  for (let i = 0; i < 21; ++i) {
+    for (let j = 0; j < 10; ++j) {
+      grid[i][j] = "";
+    }
+  }
+  updateDisplay(ctx, 0);
+  fallingPiece = [];
+  changeNextPieceDisplay(nextPiece, blockColorHex[nextPiece]);
+  updateDisplay(ctx, dropSpeed);
+  mainLoop(ctx);
+}
+
+function setMonochrome() {
+  isMonochrome = true;
+  updateDisplay(ctx, 0);
+  changeNextPieceDisplay(nextPiece, "grey");
+}
+
+function unsetMonochrome() {
+  isMonochrome = false;
+  updateDisplay(ctx, 0);
+  changeNextPieceDisplay(nextPiece, blockColorHex[nextPiece]);
+}
+
+// Setup get two canvases and set next piece when first load
 window.addEventListener("load", function () {
   canvas = document.getElementById("mainGrid");
   ctx = canvas.getContext("2d");
   nextPieceCanvas = document.getElementById("nextPiece");
   nextPieceCtx = nextPieceCanvas.getContext("2d");
 
-  nextPiece = "I";
-  gridSize = 4;
-  changeNextPieceDisplay(nextPiece, blockColorHex[nextPiece]);
-  updateDisplay(ctx, dropSpeed);
-  mainLoop(ctx);
+  setGame();
 });
+
+function incrementLinesClear() {
+  ++document.getElementById("lines").innerHTML;
+}
 
 async function mainLoop(ctx) {
   while (!isGameOver) {
@@ -46,11 +77,12 @@ async function mainLoop(ctx) {
       };
 
       // Clears line if it is full
-      for (let i = 0; i <= 20; ++i) {
+      for (let i = 0; i < 21; ++i) {
         if (isRowFull(grid[i])) {
           for (let j = 0; j < 10; ++j) {
             grid[i][j] = "";
           }
+          incrementLinesClear();
           for (let j = i; j > 0; --j) {
             for (let k = 0; k < 10; ++k) {
               grid[j][k] = grid[j - 1][k];
@@ -59,7 +91,7 @@ async function mainLoop(ctx) {
         }
       }
 
-      if (grid[0][3] == "") {
+      if (grid[0][3] === "" && grid[0][4] === "" && grid[0][5] === "") {
         changeFallingPiece(nextPiece);
 
         nextPiece = blockType[Math.floor(Math.random() * blockType.length)];
@@ -114,12 +146,14 @@ function changeGrid(row, col, color, ctx) {
 
 async function updateDisplay(ctx, dropSpeed) {
   return delay(dropSpeed).then((e) => {
-    for (let i = 1; i <= 20; ++i) {
-      for (let j = 0; j <= 9; ++j) {
-        if (grid[i][j] !== "") {
-          changeGrid(i - 1, j, grid[i][j], ctx);
-        } else {
+    for (let i = 1; i < 21; ++i) {
+      for (let j = 0; j < 10; ++j) {
+        if (grid[i][j] === "") {
           changeGrid(i - 1, j, "black", ctx);
+        } else {
+          isMonochrome
+            ? changeGrid(i - 1, j, "grey", ctx)
+            : changeGrid(i - 1, j, grid[i][j], ctx);
         }
       }
     }
@@ -148,7 +182,7 @@ function canFall(fallingPiece) {
 
 document.addEventListener("keydown", async function (event) {
   if (event.key === "ArrowDown") {
-    dropSpeed = 150;
+    dropSpeed = 100;
   } else if (event.key === "ArrowLeft") {
     let canMoveLeft = (fallingPiece) => {
       if (fallingPiece.length === 0) return false;
@@ -213,19 +247,15 @@ document.addEventListener("keydown", async function (event) {
       ++upperLeftCorner.col;
     }
   } else if (event.key === "ArrowUp") {
-    let minRow = 21;
-    let minCol = 10;
 
-    for (let i = 0; i < fallingPiece.length; ++i) {
-      minRow = Math.min(minRow, fallingPiece[i].row);
-      minCol = Math.min(minCol, fallingPiece[i].col);
-    }
+    // if falling piece is O block then there is not a need to rotate
+    if (gridSize === 2) return;
 
     let rotateGrid = new Array(4).fill("").map(() => new Array(4).fill(""));
 
     for (let i = 0; i < 4; ++i) {
       for (let j = 0; j < 4; ++j) {
-        if (upperLeftCorner.row + i > 20 || upperLeftCorner.col + j > 9) {
+        if (upperLeftCorner.row + i >= 21 || upperLeftCorner.col + j >= 10) {
           continue;
         }
 
@@ -241,6 +271,7 @@ document.addEventListener("keydown", async function (event) {
       }
     }
 
+    // rotate 4x4 of grid for I block only 
     let rotate4 = (gridToRotate) => {
       for (let i = 0; i < 2; ++i) {
         for (let j = i; j < 3 - i; ++j) {
@@ -253,6 +284,7 @@ document.addEventListener("keydown", async function (event) {
       }
     };
 
+    // rotate 3x3 of grid for J, L, S, T, Z block
     let rotate3 = (gridToRotate) => {
       for (let i = 0; i < 2; ++i) {
         let temp = gridToRotate[0][i];
@@ -280,8 +312,8 @@ document.addEventListener("keydown", async function (event) {
         for (let j = 0; j < 4; ++j) {
           if (rotateGrid[i][j] != "") {
             if (
-              upperLeftCorner.row + i > 20 ||
-              upperLeftCorner.col + j > 9 ||
+              upperLeftCorner.row + i >= 21 ||
+              upperLeftCorner.col + j >= 10 ||
               grid[upperLeftCorner.row + i][upperLeftCorner.col + j] != ""
             ) {
               for ({ row, col } of fallingPiece) {
@@ -381,8 +413,6 @@ function changeNextPieceDisplay(blockType, color) {
 
 // Keeps track of the falling pieces by pusing to a variable
 function changeFallingPiece(blockType) {
-  fallingPiece = [];
-
   switch (blockType) {
     case "I":
       gridSize = 4;
@@ -397,7 +427,6 @@ function changeFallingPiece(blockType) {
       gridSize = 3;
       upperLeftCorner.row = 0;
       upperLeftCorner.col = 3;
-      console.log("Here");
       break;
     case "O":
       gridSize = 2;

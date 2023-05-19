@@ -8,11 +8,42 @@
 </head>
 
 <body>
-  <div>Tetris</div>
-  <div id="gridContainer">
-    <canvas id="mainGrid" width="300px" height="600px"></canvas>
-    <div id="nextContainer"> Next Piece
-      <canvas id="nextPiece" width="150px" height="150px"></canvas>
+  <div id="wrapper">
+    <h1>Tetris</h1>
+    <div id="gridContainer">
+      <canvas id="mainGrid" width="300px" height="600px"></canvas>
+      <div id="rightContainer">
+        <div id="blockColor">
+          <h2>Block Color</h2>
+          <div>
+            <input type="radio" name="type" checked="checked" onchange="unsetMonochrome()" id="option1">
+            <label for="option1">Colorful</label>
+          </div>
+          <div>
+            <input type="radio" name="type" onchange="setMonochrome()" id="option2">
+            <label for="option2">Grey</label>
+          </div>
+        </div>
+        <div>
+          <h2>Lines Clear</h2>
+          <div id="lines">0</div>
+          <button onclick="setGame()">Reset</button>
+        </div>
+        <div>
+          <h2>Next Piece</h2>
+          <canvas id="nextPiece" width="150px" height="150px"></canvas>
+        </div>
+      </div>
+    </div>
+    <div id="controls">
+      <h2>Controls</h2>
+      <div style="width: 150px; height: 150px;">
+        <div>↑ Rotate</div>
+        <div>↓ Soft Drop</div>
+        <div>← Move Piece left</div>
+        <div>→ Move Piece right</div>
+        <div>[Space] Hard Drop</div>
+      </div>
     </div>
   </div>
 </body>

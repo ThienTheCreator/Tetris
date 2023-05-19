@@ -1,25 +1,43 @@
-body{
+#wrapper {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 40%;
   text-align: center;
 }
 
-#gridContainer{
+#gridContainer {
   display: flex;
   flex-direction: row;
   justify-content: center;
 }
 
-#mainGrid{
+#mainGrid {
   background-color: black;
   image-rendering: pixelated;
 }
 
-#nextContainer{
+#blockColor {
+  display: flex;
+  flex-direction: column;
+}
+
+#rightContainer {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   margin-left: 10px;
+  justify-content: space-between;
 }
 
-#nextPiece{
+#nextPiece {
   background-color: black;
+}
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
 }
