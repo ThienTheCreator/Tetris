@@ -48,7 +48,7 @@ let greyHex = {
 let blockColorHex = colorHex;
 
 function setGame() {
-  document.getElementById("lines").innerHTML = 0;
+  document.getElementById("linesCleared").innerHTML = 0;
   setNextPiece("I");
   gridSize = 4;
   for (let i = 0; i < 21; ++i) {
@@ -90,7 +90,7 @@ window.addEventListener("load", function() {
 });
 
 function incrementLinesClear() {
-  ++document.getElementById("lines").innerHTML;
+  ++document.getElementById("linesCleared").innerHTML;
 }
 
 async function mainLoop(ctx) {
@@ -135,15 +135,15 @@ async function mainLoop(ctx) {
         }
       }
 
-      fallingPiece.position = fallingPiece.position.filter(
+      let position = fallingPiece.position.filter(
         (e1) =>
           !tempFallingPiece.some((e2) => e1.row === e2.row && e1.col === e2.col)
       );
 
-      for ({ row, col } of fallingPiece.position) {
+      for ({ row, col } of position) {
         grid[row][col] = "";
       }
-      ++upperLeftCorner.row;
+      ++fallingPiece.upperLeftCorner.row;
     }
     fallingPiece.position = tempFallingPiece;
 
@@ -224,12 +224,12 @@ document.addEventListener("keydown", async function(event) {
 
     let tempFallingPiece = [];
     if (canMoveLeft(fallingPiece.position)) {
-      for ({ row, col } of position) {
+      for ({ row, col } of fallingPiece.position) {
         grid[row][col - 1] = grid[row][col];
         tempFallingPiece.push({ row: row, col: col - 1 });
       }
 
-      position = position.filter(
+      let position = fallingPiece.position.filter(
         (e1) =>
           !tempFallingPiece.some((e2) => e1.row === e2.row && e1.col === e2.col)
       );
@@ -237,8 +237,8 @@ document.addEventListener("keydown", async function(event) {
       for ({ row, col } of position) {
         grid[row][col] = "";
       }
-      position = tempFallingPiece;
-      --upperLeftCorner.col;
+      fallingPiece.position = tempFallingPiece;
+      --fallingPiece.upperLeftCorner.col;
     }
   } else if (event.key === "ArrowRight") {
     let canMoveRight = (position) => {
@@ -269,30 +269,30 @@ document.addEventListener("keydown", async function(event) {
         grid[row][col] = "";
       }
       fallingPiece.position = tempFallingPiece;
-      ++upperLeftCorner.col;
+      ++fallingPiece.upperLeftCorner.col;
     }
   } else if (event.key === "ArrowUp") {
 
     // if falling piece is O block then there is not a need to rotate
-    if (gridSize === 2) return;
+    if (fallingPiece.gridSize === 2) return;
 
     let rotateGrid = new Array(4).fill("").map(() => new Array(4).fill(""));
 
     for (let i = 0; i < 4; ++i) {
       for (let j = 0; j < 4; ++j) {
-        if (upperLeftCorner.row + i >= 21 || upperLeftCorner.col + j >= 10) {
+        if (fallingPiece.upperLeftCorner.row + i >= 21 || fallingPiece.upperLeftCorner.col + j >= 10) {
           continue;
         }
 
         if (
           !fallingPiece.position.some(
-            (e) => e.row === upperLeftCorner.row + i && e.col === upperLeftCorner.col + j
+            (e) => e.row === fallingPiece.upperLeftCorner.row + i && e.col === fallingPiece.upperLeftCorner.col + j
           )
         ) {
           continue;
         }
 
-        rotateGrid[i][j] = grid[upperLeftCorner.row + i][upperLeftCorner.col + j];
+        rotateGrid[i][j] = grid[fallingPiece.upperLeftCorner.row + i][fallingPiece.upperLeftCorner.col + j];
       }
     }
 
@@ -337,9 +337,9 @@ document.addEventListener("keydown", async function(event) {
         for (let j = 0; j < 4; ++j) {
           if (rotateGrid[i][j] != "") {
             if (
-              upperLeftCorner.row + i >= 21 ||
-              upperLeftCorner.col + j >= 10 ||
-              grid[upperLeftCorner.row + i][upperLeftCorner.col + j] != ""
+              fallingPiece.upperLeftCorner.row + i >= 21 ||
+              fallingPiece.upperLeftCorner.col + j >= 10 ||
+              grid[fallingPiece.upperLeftCorner.row + i][fallingPiece.upperLeftCorner.col + j] != ""
             ) {
               for ({ row, col } of fallingPiece.position) {
                 grid[row][col] = temp;
@@ -361,8 +361,8 @@ document.addEventListener("keydown", async function(event) {
       for (let i = 0; i < 4; ++i) {
         for (let j = 0; j < 4; ++j) {
           if (rotateGrid[i][j] != "") {
-            grid[upperLeftCorner.row + i][upperLeftCorner.col + j] = temp;
-            fallingPiece.position.push({ row: upperLeftCorner.row + i, col: upperLeftCorner.col + j });
+            grid[fallingPiece.upperLeftCorner.row + i][fallingPiece.upperLeftCorner.col + j] = temp;
+            fallingPiece.position.push({ row: fallingPiece.upperLeftCorner.row + i, col: fallingPiece.upperLeftCorner.col + j });
           }
         }
       }
@@ -384,12 +384,12 @@ document.addEventListener("keyup", async function(event) {
         }
       }
 
-      fallingPiece.position = fallingPiece.position.filter(
+      let position = fallingPiece.position.filter(
         (e1) =>
           !tempFallingPiece.some((e2) => e1.row === e2.row && e1.col === e2.col)
       );
 
-      for ({ row, col } of fallingPiece.position) {
+      for ({ row, col } of position) {
         grid[row][col] = "";
       }
       fallingPiece.position = tempFallingPiece;
