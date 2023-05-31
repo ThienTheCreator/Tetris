@@ -1,10 +1,10 @@
 class Piece {
   type = "I";
   position = [];
-  upperLeftCorner = {row: 0, col: 0};
+  upperLeftCorner = { row: 0, col: 0 };
   gridSize = 0;
-  
-  constructor(type, position){
+
+  constructor(type, position) {
     this.type = type;
     this.position = position;
   }
@@ -15,7 +15,7 @@ let canvas;
 let ctx;
 let nextPieceCanvas;
 let nextPieceCtx;
-let fallingPiece = new Piece("I", [{row: 0, col: 0}]);
+let fallingPiece = new Piece("I", [{ row: 0, col: 0 }]);
 let nextPiece;
 let isGameOver = true;
 let dropSpeed = 400;
@@ -60,8 +60,8 @@ function setGame() {
   fallingPiece.position = [];
   changeNextPieceDisplay(nextPiece.type, blockColorHex[nextPiece.type]);
   updateDisplay(ctx, dropSpeed);
-  
-  if(isGameOver){
+
+  if (isGameOver) {
     isGameOver = false;
     mainLoop(ctx);
   }
@@ -77,6 +77,14 @@ function setColor() {
   blockColorHex = colorHex;
   updateDisplay(ctx, 0);
   changeNextPieceDisplay(nextPiece.type, blockColorHex[nextPiece.type]);
+}
+
+function handleShowLines() {
+  let lineColor = document.getElementById("showLines").checked ? "#808080" : "#000000";
+  for (let i = 0; i < 9; ++i) {
+    ctx.fillStyle = lineColor;
+    ctx.fillRect(29 + 30 * i, 1, 2, 598);
+  }
 }
 
 // Setup get two canvases and set next piece when first load
@@ -496,28 +504,28 @@ function setNextPiece(blockType) {
       newPiece.position.push({ row: 1, col: i });
     }
   }
-  
+
   nextPiece = newPiece;
 }
 
 // Keeps track of the falling pieces by pusing to a variable
 function changeFallingPiece() {
   let canPlaceNextPiece = (position) => {
-    for({ row, col } of position){
-      if(grid[row][col] !== "")
+    for ({ row, col } of position) {
+      if (grid[row][col] !== "")
         return false;
     }
     return true;
   }
 
-  if(canPlaceNextPiece(nextPiece.position)){
+  if (canPlaceNextPiece(nextPiece.position)) {
 
     fallingPiece = nextPiece;
-    for({ row, col } of fallingPiece.position){
+    for ({ row, col } of fallingPiece.position) {
       grid[row][col] = fallingPiece.type;
     }
     setNextPiece;
-  }else {
+  } else {
     isGameOver = true;
   }
 }
