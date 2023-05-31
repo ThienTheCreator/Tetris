@@ -1,19 +1,31 @@
+class Piece {
+  type = "I";
+  position = [];
+  upperLeftCorner = {row: 0, col: 0};
+  gridSize = 0;
+  
+  constructor(type, position){
+    this.type = type;
+    this.position = position;
+  }
+}
+
 let grid = new Array(21).fill("").map(() => new Array(10).fill(""));
 let canvas;
 let ctx;
 let nextPieceCanvas;
 let nextPieceCtx;
-let fallingPiece = [];
+let fallingPiece = new Piece("I", [{row: 0, col: 0}]);
 let nextPiece;
-let isGameOver = false;
+let isGameOver = true;
 let dropSpeed = 400;
 let upperLeftCorner = { row: 0, col: 0 };
 let gridSize = 0;
 let fallingPieceGrid = new Array(4).fill("").map(() => new Array(4).fill(""));
-let isMonochrome = false;
 
 let blockType = ["I", "J", "L", "O", "S", "T", "Z"];
-let blockColorHex = {
+
+let colorHex = {
   I: "#00f0f0",
   J: "#0000f0",
   L: "#f0a000",
@@ -23,10 +35,21 @@ let blockColorHex = {
   Z: "#d80000",
 };
 
+let greyHex = {
+  I: "#808080",
+  J: "#808080",
+  L: "#808080",
+  O: "#808080",
+  S: "#808080",
+  T: "#808080",
+  Z: "#808080",
+};
+
+let blockColorHex = colorHex;
+
 function setGame() {
-  isGameOver = false;
   document.getElementById("lines").innerHTML = 0;
-  nextPiece = "I";
+  setNextPiece("I");
   gridSize = 4;
   for (let i = 0; i < 21; ++i) {
     for (let j = 0; j < 10; ++j) {
@@ -34,26 +57,30 @@ function setGame() {
     }
   }
   updateDisplay(ctx, 0);
-  fallingPiece = [];
-  changeNextPieceDisplay(nextPiece, blockColorHex[nextPiece]);
+  fallingPiece.position = [];
+  changeNextPieceDisplay(nextPiece.type, blockColorHex[nextPiece.type]);
   updateDisplay(ctx, dropSpeed);
-  mainLoop(ctx);
+  
+  if(isGameOver){
+    isGameOver = false;
+    mainLoop(ctx);
+  }
 }
 
-function setMonochrome() {
-  isMonochrome = true;
+function setGrey() {
+  blockColorHex = greyHex;
   updateDisplay(ctx, 0);
-  changeNextPieceDisplay(nextPiece, "grey");
+  changeNextPieceDisplay(nextPiece.type, blockColorHex[nextPiece.type]);
 }
 
-function unsetMonochrome() {
-  isMonochrome = false;
+function setColor() {
+  blockColorHex = colorHex;
   updateDisplay(ctx, 0);
-  changeNextPieceDisplay(nextPiece, blockColorHex[nextPiece]);
+  changeNextPieceDisplay(nextPiece.type, blockColorHex[nextPiece.type]);
 }
 
 // Setup get two canvases and set next piece when first load
-window.addEventListener("load", function () {
+window.addEventListener("load", function() {
   canvas = document.getElementById("mainGrid");
   ctx = canvas.getContext("2d");
   nextPieceCanvas = document.getElementById("nextPiece");
@@ -68,7 +95,7 @@ function incrementLinesClear() {
 
 async function mainLoop(ctx) {
   while (!isGameOver) {
-    if (fallingPiece === undefined || fallingPiece.length === 0) {
+    if (fallingPiece.position === undefined || fallingPiece.position.length === 0) {
       let isRowFull = (e) => {
         for (let i = 0; i < e.length; ++i) {
           if (e[i] == "") return false;
@@ -92,33 +119,33 @@ async function mainLoop(ctx) {
       }
 
       if (grid[0][3] === "" && grid[0][4] === "" && grid[0][5] === "") {
-        changeFallingPiece(nextPiece);
+        changeFallingPiece();
 
-        nextPiece = blockType[Math.floor(Math.random() * blockType.length)];
-        changeNextPieceDisplay(nextPiece, blockColorHex[nextPiece]);
+        setNextPiece(blockType[Math.floor(Math.random() * blockType.length)]);
+        changeNextPieceDisplay(nextPiece.type, blockColorHex[nextPiece.type]);
       }
     }
 
     let tempFallingPiece = [];
-    if (canFall(fallingPiece)) {
-      for ({ row, col } of fallingPiece) {
+    if (canFall(fallingPiece.position)) {
+      for ({ row, col } of fallingPiece.position) {
         if (row < 20) {
           grid[row + 1][col] = grid[row][col];
           tempFallingPiece.push({ row: row + 1, col: col });
         }
       }
 
-      fallingPiece = fallingPiece.filter(
+      fallingPiece.position = fallingPiece.position.filter(
         (e1) =>
           !tempFallingPiece.some((e2) => e1.row === e2.row && e1.col === e2.col)
       );
 
-      for ({ row, col } of fallingPiece) {
+      for ({ row, col } of fallingPiece.position) {
         grid[row][col] = "";
       }
       ++upperLeftCorner.row;
     }
-    fallingPiece = tempFallingPiece;
+    fallingPiece.position = tempFallingPiece;
 
     let canPlace = (grid) => {
       for (let i = 0; i < 10; ++i) {
@@ -151,9 +178,7 @@ async function updateDisplay(ctx, dropSpeed) {
         if (grid[i][j] === "") {
           changeGrid(i - 1, j, "black", ctx);
         } else {
-          isMonochrome
-            ? changeGrid(i - 1, j, "grey", ctx)
-            : changeGrid(i - 1, j, grid[i][j], ctx);
+          changeGrid(i - 1, j, blockColorHex[grid[i][j]], ctx);
         }
       }
     }
@@ -161,16 +186,16 @@ async function updateDisplay(ctx, dropSpeed) {
 }
 
 // Returns a boolean if the current piece can fall without conflicting with blocks beneath
-function canFall(fallingPiece) {
-  if (fallingPiece.length === 0) return false;
+function canFall(positions) {
+  if (positions.length === 0) return false;
 
-  for ({ row, col } of fallingPiece) {
+  for ({ row, col } of positions) {
     if (row == undefined || col == undefined || row >= 20) {
       return false;
     }
 
-    for ({ row, col } of fallingPiece) {
-      if (fallingPiece.some((e) => e.row === row + 1 && e.col === col)) {
+    for ({ row, col } of positions) {
+      if (positions.some((e) => e.row === row + 1 && e.col === col)) {
         continue;
       }
       if (row >= 20 || grid[row + 1][col] != "") return false;
@@ -180,15 +205,15 @@ function canFall(fallingPiece) {
   return true;
 }
 
-document.addEventListener("keydown", async function (event) {
+document.addEventListener("keydown", async function(event) {
   if (event.key === "ArrowDown") {
     dropSpeed = 100;
   } else if (event.key === "ArrowLeft") {
-    let canMoveLeft = (fallingPiece) => {
-      if (fallingPiece.length === 0) return false;
+    let canMoveLeft = (position) => {
+      if (position.length === 0) return false;
 
-      for ({ row, col } of fallingPiece) {
-        if (fallingPiece.some((e) => e.row === row && e.col === col - 1)) {
+      for ({ row, col } of position) {
+        if (position.some((e) => e.row === row && e.col === col - 1)) {
           continue;
         }
         if (col <= 0 || grid[row][col - 1] != "") return false;
@@ -198,29 +223,29 @@ document.addEventListener("keydown", async function (event) {
     };
 
     let tempFallingPiece = [];
-    if (canMoveLeft(fallingPiece)) {
-      for ({ row, col } of fallingPiece) {
+    if (canMoveLeft(fallingPiece.position)) {
+      for ({ row, col } of position) {
         grid[row][col - 1] = grid[row][col];
         tempFallingPiece.push({ row: row, col: col - 1 });
       }
 
-      fallingPiece = fallingPiece.filter(
+      position = position.filter(
         (e1) =>
           !tempFallingPiece.some((e2) => e1.row === e2.row && e1.col === e2.col)
       );
 
-      for ({ row, col } of fallingPiece) {
+      for ({ row, col } of position) {
         grid[row][col] = "";
       }
-      fallingPiece = tempFallingPiece;
+      position = tempFallingPiece;
       --upperLeftCorner.col;
     }
   } else if (event.key === "ArrowRight") {
-    let canMoveRight = (fallingPiece) => {
-      if (fallingPiece.length === 0) return false;
+    let canMoveRight = (position) => {
+      if (position.length === 0) return false;
 
-      for ({ row, col } of fallingPiece) {
-        if (fallingPiece.some((e) => e.row === row && e.col === col + 1)) {
+      for ({ row, col } of position) {
+        if (position.some((e) => e.row === row && e.col === col + 1)) {
           continue;
         }
         if (col >= 9 || grid[row][col + 1] != "") return false;
@@ -230,20 +255,20 @@ document.addEventListener("keydown", async function (event) {
     };
 
     let tempFallingPiece = [];
-    if (canMoveRight(fallingPiece)) {
-      for ({ row, col } of fallingPiece) {
+    if (canMoveRight(fallingPiece.position)) {
+      for ({ row, col } of fallingPiece.position) {
         grid[row][col + 1] = grid[row][col];
         tempFallingPiece.push({ row: row, col: col + 1 });
       }
-      fallingPiece = fallingPiece.filter(
+      fallingPiece.position = fallingPiece.position.filter(
         (e1) =>
           !tempFallingPiece.some((e2) => e1.row === e2.row && e1.col === e2.col)
       );
 
-      for ({ row, col } of fallingPiece) {
+      for ({ row, col } of fallingPiece.position) {
         grid[row][col] = "";
       }
-      fallingPiece = tempFallingPiece;
+      fallingPiece.position = tempFallingPiece;
       ++upperLeftCorner.col;
     }
   } else if (event.key === "ArrowUp") {
@@ -260,7 +285,7 @@ document.addEventListener("keydown", async function (event) {
         }
 
         if (
-          !fallingPiece.some(
+          !fallingPiece.position.some(
             (e) => e.row === upperLeftCorner.row + i && e.col === upperLeftCorner.col + j
           )
         ) {
@@ -303,7 +328,7 @@ document.addEventListener("keydown", async function (event) {
 
     let temp = "";
     let canRotate = (grid, rotateGrid) => {
-      for ({ row, col } of fallingPiece) {
+      for ({ row, col } of fallingPiece.position) {
         temp = grid[row][col];
         grid[row][col] = "";
       }
@@ -316,7 +341,7 @@ document.addEventListener("keydown", async function (event) {
               upperLeftCorner.col + j >= 10 ||
               grid[upperLeftCorner.row + i][upperLeftCorner.col + j] != ""
             ) {
-              for ({ row, col } of fallingPiece) {
+              for ({ row, col } of fallingPiece.position) {
                 grid[row][col] = temp;
               }
               return false;
@@ -328,16 +353,16 @@ document.addEventListener("keydown", async function (event) {
     };
 
     if (canRotate(grid, rotateGrid)) {
-      for ({ row, col } of fallingPiece) {
+      for ({ row, col } of fallingPiece.position) {
         grid[row][col] = "";
       }
-      fallingPiece = [];
+      fallingPiece.position = [];
 
       for (let i = 0; i < 4; ++i) {
         for (let j = 0; j < 4; ++j) {
           if (rotateGrid[i][j] != "") {
             grid[upperLeftCorner.row + i][upperLeftCorner.col + j] = temp;
-            fallingPiece.push({ row: upperLeftCorner.row + i, col: upperLeftCorner.col + j });
+            fallingPiece.position.push({ row: upperLeftCorner.row + i, col: upperLeftCorner.col + j });
           }
         }
       }
@@ -346,30 +371,30 @@ document.addEventListener("keydown", async function (event) {
   updateDisplay(ctx, 100);
 });
 
-document.addEventListener("keyup", async function (event) {
+document.addEventListener("keyup", async function(event) {
   if (event.key === "ArrowDown") {
     dropSpeed = 400;
   } else if (event.key === " ") {
-    while (canFall(fallingPiece)) {
+    while (canFall(fallingPiece.position)) {
       let tempFallingPiece = [];
-      for ({ row, col } of fallingPiece) {
+      for ({ row, col } of fallingPiece.position) {
         if (row < 20) {
           grid[row + 1][col] = grid[row][col];
           tempFallingPiece.push({ row: row + 1, col: col });
         }
       }
 
-      fallingPiece = fallingPiece.filter(
+      fallingPiece.position = fallingPiece.position.filter(
         (e1) =>
           !tempFallingPiece.some((e2) => e1.row === e2.row && e1.col === e2.col)
       );
 
-      for ({ row, col } of fallingPiece) {
+      for ({ row, col } of fallingPiece.position) {
         grid[row][col] = "";
       }
-      fallingPiece = tempFallingPiece;
+      fallingPiece.position = tempFallingPiece;
     }
-    fallingPiece = [];
+    fallingPiece.position = [];
     updateDisplay(ctx, 100);
   }
 });
@@ -387,8 +412,6 @@ function horizontalSquares(x, y, num, color) {
 function changeNextPieceDisplay(blockType, color) {
   nextPieceCtx.fillStyle = "black";
   nextPieceCtx.fillRect(0, 0, 150, 150);
-
-  color = isMonochrome ? "grey" : color;
 
   if (blockType == "I") {
     horizontalSquares(16, 61, 4, color);
@@ -413,76 +436,88 @@ function changeNextPieceDisplay(blockType, color) {
   }
 }
 
-// Keeps track of the falling pieces by pusing to a variable
-function changeFallingPiece(blockType) {
+function setNextPiece(blockType) {
+  let newPiece = new Piece(blockType, []);
+
   switch (blockType) {
     case "I":
-      gridSize = 4;
-      upperLeftCorner.row = -1;
-      upperLeftCorner.col = 3;
+      newPiece.gridSize = 4;
+      newPiece.upperLeftCorner.row = -1;
+      newPiece.upperLeftCorner.col = 3;
       break;
     case "J":
     case "L":
     case "S":
     case "T":
     case "Z":
-      gridSize = 3;
-      upperLeftCorner.row = 0;
-      upperLeftCorner.col = 3;
+      newPiece.gridSize = 3;
+      newPiece.upperLeftCorner.row = 0;
+      newPiece.upperLeftCorner.col = 3;
       break;
     case "O":
-      gridSize = 2;
-      upperLeftCorner.row = -1;
-      upperLeftCorner.col = 3;
+      newPiece.gridSize = 2;
+      newPiece.upperLeftCorner.row = -1;
+      newPiece.upperLeftCorner.col = 3;
       break;
   }
 
   if (blockType == "I") {
     for (let i = 3; i <= 6; ++i) {
-      grid[0][i] = blockColorHex["I"];
-      fallingPiece.push({ row: 0, col: i });
+      newPiece.position.push({ row: 0, col: i });
     }
   } else if (blockType == "J") {
-    grid[0][3] = blockColorHex["J"];
-    fallingPiece.push({ row: 0, col: 3 });
+    newPiece.position.push({ row: 0, col: 3 });
     for (let i = 3; i <= 5; ++i) {
-      grid[1][i] = blockColorHex["J"];
-      fallingPiece.push({ row: 1, col: i });
+      newPiece.position.push({ row: 1, col: i });
     }
   } else if (blockType == "L") {
-    grid[0][5] = blockColorHex["L"];
-    fallingPiece.push({ row: 0, col: 5 });
+    newPiece.position.push({ row: 0, col: 5 });
     for (let i = 3; i <= 5; ++i) {
-      grid[1][i] = blockColorHex["L"];
-      fallingPiece.push({ row: 1, col: i });
+      newPiece.position.push({ row: 1, col: i });
     }
   } else if (blockType == "O") {
     for (let i = 4; i <= 5; ++i) {
-      grid[0][i] = blockColorHex["O"];
-      grid[1][i] = blockColorHex["O"];
-      fallingPiece.push({ row: 0, col: i });
-      fallingPiece.push({ row: 1, col: i });
+      newPiece.position.push({ row: 0, col: i });
+      newPiece.position.push({ row: 1, col: i });
     }
   } else if (blockType == "S") {
     for (let i = 4; i <= 5; ++i) {
-      grid[0][i] = blockColorHex["S"];
-      grid[1][i - 1] = blockColorHex["S"];
-      fallingPiece.push({ row: 0, col: i });
-      fallingPiece.push({ row: 1, col: i - 1 });
+      newPiece.position.push({ row: 0, col: i });
+      newPiece.position.push({ row: 1, col: i - 1 });
     }
   } else if (blockType == "T") {
-    grid[0][4] = blockColorHex["T"];
-    fallingPiece.push({ row: 0, col: 4 });
+    newPiece.position.push({ row: 0, col: 4 });
     for (let i = 3; i <= 5; ++i) {
-      grid[1][i] = blockColorHex["T"];
-      fallingPiece.push({ row: 1, col: i });
+      newPiece.position.push({ row: 1, col: i });
     }
   } else if (blockType == "Z") {
     for (let i = 4; i <= 5; ++i) {
-      grid[0][i - 1] = blockColorHex["Z"];
-      grid[1][i] = blockColorHex["Z"];
-      fallingPiece.push({ row: 0, col: i - 1 });
-      fallingPiece.push({ row: 1, col: i });
+      newPiece.position.push({ row: 0, col: i - 1 });
+      newPiece.position.push({ row: 1, col: i });
     }
+  }
+  
+  nextPiece = newPiece;
+}
+
+// Keeps track of the falling pieces by pusing to a variable
+function changeFallingPiece() {
+  let canPlaceNextPiece = (position) => {
+    for({ row, col } of position){
+      if(grid[row][col] !== "")
+        return false;
+    }
+    return true;
+  }
+
+  if(canPlaceNextPiece(nextPiece.position)){
+
+    fallingPiece = nextPiece;
+    for({ row, col } of fallingPiece.position){
+      grid[row][col] = fallingPiece.type;
+    }
+    setNextPiece;
+  }else {
+    isGameOver = true;
   }
 }

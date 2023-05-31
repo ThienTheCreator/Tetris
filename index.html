@@ -13,23 +13,24 @@
     <div id="gridContainer">
       <canvas id="mainGrid" width="300px" height="600px"></canvas>
       <div id="rightContainer">
-        <div id="blockColor">
-          <h2>Block Color</h2>
-          <div>
-            <input type="radio" name="type" checked="checked" onchange="unsetMonochrome()" id="option1">
-            <label for="option1">Colorful</label>
-          </div>
-          <div>
-            <input type="radio" name="type" onchange="setMonochrome()" id="option2">
-            <label for="option2">Grey</label>
-          </div>
-        </div>
-        <div>
+<div>
           <h2>Lines Clear</h2>
           <div id="lines">0</div>
           <button onclick="setGame()">Reset</button>
         </div>
-        <div>
+        <div id="blockColor">
+          <h2>Block Color</h2>
+          <div>
+            <input type="radio" name="type" checked="checked" onchange="setColor()" id="option1">
+            <label for="option1">Colorful</label>
+          </div>
+          <div>
+            <input type="radio" name="type" onchange="setGrey()" id="option2">
+            <label for="option2">Grey</label>
+          </div>
+        </div>
+        
+        <div id="nextPieceContainer">
           <h2>Next Piece</h2>
           <canvas id="nextPiece" width="150px" height="150px"></canvas>
         </div>
@@ -47,5 +48,4 @@
     </div>
   </div>
 </body>
-
 </html>

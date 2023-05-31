@@ -18,16 +18,28 @@
 }
 
 #blockColor {
+  
   display: flex;
   flex-direction: column;
 }
 
 #rightContainer {
   display: flex;
-  flex-direction: column;
+   flex-direction: column;
   justify-content: flex-end;
   margin-left: 10px;
   justify-content: space-between;
+}
+
+#lines {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+#nextPieceContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
 }
 
 #nextPiece {
@@ -41,3 +53,5 @@
   align-items: center;
   height: 200px;
 }
+
+
