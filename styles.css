@@ -1,3 +1,7 @@
+body {
+  font-family: "OCR A Std", monospace;
+}
+
 #wrapper {
   display: block;
   margin-left: auto;
@@ -17,10 +21,14 @@
   image-rendering: pixelated;
 }
 
-#blockColor {
-  
+#options {
   display: flex;
   flex-direction: column;
+}
+
+#options > div {
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 #rightContainer {
@@ -34,6 +42,12 @@
 #linesCleared {
   margin-top: 15px;
   margin-bottom: 15px;
+  font-size: 1.5em;
+}
+
+#resetButton{
+  width: 100px;
+  height: 40px;
 }
 
 #nextPieceContainer {
@@ -54,4 +68,6 @@
   height: 200px;
 }
 
-
+h1 {
+  font-size: 3em;
+}

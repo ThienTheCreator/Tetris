@@ -80,6 +80,8 @@ function setColor() {
 }
 
 function handleShowLines() {
+
+  // set lines to grey when checked
   let lineColor = document.getElementById("showLines").checked ? "#808080" : "#000000";
   for (let i = 0; i < 9; ++i) {
     ctx.fillStyle = lineColor;

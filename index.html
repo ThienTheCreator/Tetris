@@ -13,26 +13,26 @@
     <div id="gridContainer">
       <canvas id="mainGrid" width="300px" height="600px"></canvas>
       <div id="rightContainer">
-<div>
+        <div>
           <h2>Lines Clear</h2>
           <div id="linesCleared">0</div>
-          <button onclick="setGame()">Reset</button>
+          <button id="resetButton" onclick="setGame()">Reset</button>
         </div>
-        <div id="blockColor">
-          <h2>Block Color</h2>
+        <div id="options">
+          <h2>Options</h2>
           <div>
             <input type="radio" name="type" checked="checked" onchange="setColor()" id="option1">
-            <label for="option1">Colorful</label>
+            <label for="option1">Colorful Block</label>
           </div>
           <div>
             <input type="radio" name="type" onchange="setGrey()" id="option2">
-            <label for="option2">Grey</label>
+            <label for="option2">Grey Block</label>
           </div>
           <div>
             <input type="checkbox" name="showLines" onchange="handleShowLines()" id="showLines">
             <label for="showLines">Show Lines</label>
           </div>
-        </div>        
+        </div>
         <div id="nextPieceContainer">
           <h2>Next Piece</h2>
           <canvas id="nextPiece" width="150px" height="150px"></canvas>
@@ -41,14 +41,30 @@
     </div>
     <div id="controls">
       <h2>Controls</h2>
-      <div style="width: 150px; height: 150px;">
-        <div>↑ Rotate</div>
-        <div>↓ Soft Drop</div>
-        <div>← Move Piece left</div>
-        <div>→ Move Piece right</div>
-        <div>[Space] Hard Drop</div>
-      </div>
+      <table>
+        <tr>
+          <td>↑</td>
+          <td>Rotate</td>
+        </tr>
+        <tr>
+          <td>↓</td>
+          <td>Soft Drop</td>
+        </tr>
+        <tr>
+          <td>←</td>
+          <td>Move Piece Left</td>
+        </tr>
+        <tr>
+          <td>→</td>
+          <td>Move Piece Right</td>
+        </tr>
+        <tr>
+          <td>[Space]</td>
+          <td>Hard Drop</td>
+        </tr>
+      </table>
     </div>
   </div>
 </body>
+
 </html>
